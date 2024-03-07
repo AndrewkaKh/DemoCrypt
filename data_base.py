@@ -2,12 +2,12 @@ import sqlite3 as sql
 
 class DataBase():
     def __init__(self) -> None:
-        con = sql.connect("users.db")
-        self.cur = con.cursor()
+        self.con = sql.connect("users.db")
+        self.cur: sql.Cursor = self.con.cursor()
         self.cur.execute('''CREATE TABLE IF NOT EXISTS Balance (
                                 user_id INTEGER, crypto_name TEXT, amount DOUBLE
                             );''')
-        con.commit()
+        self.con.commit()
 
 
     def add_user(self, user_id: int) -> None:
@@ -17,10 +17,11 @@ class DataBase():
         if not res:
             self.cur.execute(f'''INSERT INTO Balance
                                  VALUES ({user_id}, 'USD_T', 100.0);''')
+        self.con.commit()
             
     
     @staticmethod
-    def count_amount(amount: float, from_quote: float, to_quote: float) -> float:
+    def _count_amount(amount: float, from_quote: float, to_quote: float) -> float:
         return amount * from_quote / to_quote
 
 
@@ -33,7 +34,8 @@ class DataBase():
             return False
         else:
             current_amount = current_amount[0]
-        new_amount = DataBase.count_amount(amount, from_quote, to_quote)
+
+        new_amount = DataBase._count_amount(amount, from_quote, to_quote)
         balance = self.cur.execute(f'''SELECT amount
                                        FROM Balance
                                        WHERE user_id = {user_id}
@@ -43,12 +45,15 @@ class DataBase():
                                  VALUES ({user_id}, '{to_crypro_name}', 0.0);''')
         else:
             balance = balance[0]
+
         self.cur.execute(f'''UPDATE Balance
                              SET amount = amount - {amount}
                              WHERE crypto_name = '{from_crypro_name}';''')
         self.cur.execute(f'''UPDATE Balance
                              SET amount = amount + {new_amount}
                              WHERE crypto_name = '{to_crypro_name}';''')
+
+        self.con.commit()
         return True
     
 
@@ -60,3 +65,4 @@ class DataBase():
         if not balance:
             return 0.0
         return balance[0]
+    
