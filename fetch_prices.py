@@ -3,15 +3,13 @@ from collections import deque
 import aiohttp
 import asyncio
 
-interval_ = 10 # как часто отправляем запросы (сек)
-
 class CryptoPrices:
     _CRYPTO_NAMES = ["BTC", "ETH"]
-
+    interval_ = 10  # как часто отправляем запросы (сек)
     def __init__(self) -> None:
         self.crypt: dict[str, deque[float]] = {}
         for name in CryptoPrices._CRYPTO_NAMES:
-            self.crypt[name] = deque(maxlen=(24 * 60 * 60 / interval_))
+            self.crypt[name] = deque(maxlen=(24 * 60 * 60 // CryptoPrices.interval_))
         self.update_task = None  # Task для периодического обновления
 
     async def _get_crypto_price(self, currency_from, currency_to):
