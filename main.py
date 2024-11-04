@@ -5,7 +5,7 @@ from data_base import DataBase
 from fetch_prices import CryptoPrices
 import matplotlib.pyplot as plt
 import io
-from telegram import InputMediaPhoto
+from telegram import InputMediaPhoto, InputFile
 from datetime import datetime, timedelta
 
 
@@ -85,8 +85,11 @@ async def back_to_menu_charts(update: Update, context: ContextTypes.DEFAULT_TYPE
 
 
 @TelegramBot.AddCallbackQueryHandler(pattern="show_chart_")
-async def plot_selected_crypto_chart(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    crypto_name = update.callback_query.data.split("_")[-1]
+async def plot_selected_crypto_chart(update: Update, context: ContextTypes.DEFAULT_TYPE, crypto_name=None):
+    await update.callback_query.message.delete()
+    if not crypto_name:
+        #await update.callback_query.message.delete()
+        crypto_name = update.callback_query.data.split("_")[-1]
 
     if crypto_name not in crypto_prices.crypt:
         await update.callback_query.answer("Криптовалюта не найдена.")
@@ -115,18 +118,18 @@ async def plot_selected_crypto_chart(update: Update, context: ContextTypes.DEFAU
     buffer.seek(0)
     plt.close(fig)
 
-    # Создаем кнопку "Назад" для возврата к выбору графиков
-    keyboard = [
-        [InlineKeyboardButton("Назад", callback_data="back_to_menu_charts")]
-    ]
+    # Отправляем график как фото
+    await update.callback_query.answer()
+    await update.callback_query.message.reply_photo(buffer)
+
+    # Кнопки "Назад" и "Обновить"
+    back_button = InlineKeyboardButton("Назад", callback_data="charts")
+    refresh_button = InlineKeyboardButton("Обновить", callback_data=f"show_chart_{crypto_name}")
+    keyboard = [[refresh_button], [back_button]]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    # Обновляем сообщение с изображением графика и кнопкой "Назад"
-    await update.callback_query.answer()
-    await update.callback_query.edit_message_media(
-        media=InputMediaPhoto(buffer),
-        reply_markup=reply_markup
-    )
+    # Отправляем новое текстовое сообщение с кнопками "Назад" и "Обновить"
+    await update.callback_query.message.reply_text("Выберите действие:", reply_markup=reply_markup)
 
 
 @TelegramBot.AddCallbackQueryHandler(pattern="buy_crypto")
