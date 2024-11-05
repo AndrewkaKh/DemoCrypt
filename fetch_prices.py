@@ -4,7 +4,7 @@ import aiohttp
 import asyncio
 
 class CryptoPrices:
-    _CRYPTO_NAMES = ["BTC", "ETH"]
+    _CRYPTO_NAMES = ["BTC", "ETH", "USDT"]
     interval_ = 10  # как часто отправляем запросы (сек)
     def __init__(self) -> None:
         self.crypt: dict[str, deque[float]] = {}

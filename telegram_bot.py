@@ -1,4 +1,4 @@
-from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler
 from functools import wraps
 
 class TelegramBot():
@@ -84,5 +84,21 @@ class TelegramBot():
             return wrapper
 
         return decorator
+    
+    @classmethod
+    def AddMessageHandler(cls, filters=None):
+        def decorator(func):
+
+            @wraps(func)
+            async def wrapper(update, context, *args, **kwargs):
+                return await func(update, context, *args, **kwargs)
+
+            handler = MessageHandler(filters=filters, callback=wrapper)
+            cls.handlers.append(handler)
+
+            return handler
+
+        return decorator
+
 
 

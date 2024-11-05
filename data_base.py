@@ -18,11 +18,11 @@ class DataBase:
         # Проверка, существует ли уже пользователь в таблице
         res = self.cur.execute('''SELECT user_id
                                    FROM Balance
-                                   WHERE user_id = ? AND crypto_name = 'USD_T';''', (user_id,)).fetchone()
+                                   WHERE user_id = ? AND crypto_name = 'USDT';''', (user_id,)).fetchone()
         # Если пользователя нет, добавить его с начальным балансом
         if not res:
             self.cur.execute('''INSERT INTO Balance (user_id, crypto_name, amount)
-                                VALUES (?, 'USD_T', 100.0);''', (user_id,))
+                                VALUES (?, 'USDT', 100.0);''', (user_id,))
             self.con.commit()
 
     @staticmethod
