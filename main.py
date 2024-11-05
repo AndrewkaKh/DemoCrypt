@@ -6,9 +6,10 @@ from fetch_prices import CryptoPrices
 import matplotlib.pyplot as plt
 import io
 from datetime import datetime, timedelta
+import seaborn as sns
 
 
-bot = TelegramBot()
+bot = TelegramBot("7832412416:AAFKYWoHnpL9ehHcZy8LlyWeyTxq5b8Ap30")
 db = DataBase()  # Создаем экземпляр базы данных
 
 
@@ -116,6 +117,10 @@ async def plot_selected_crypto_chart(update: Update, context: ContextTypes.DEFAU
     ax[1].set_ylabel("Цена")
     ax[1].legend()
 
+    plt.rcParams['figure.figsize'] = 10, 8
+    plt.rcParams['font.size'] = 12
+    sns.set_style('darkgrid')
+
     buffer = io.BytesIO()
     plt.tight_layout()
     plt.savefig(buffer, format='png')
@@ -163,7 +168,7 @@ async def select_target_currency(update: Update, context: ContextTypes.DEFAULT_T
 
     # Предлагаем выбрать валюту, на которую будет произведен обмен
     keyboard = [
-        [InlineKeyboardButton(crypto, callback_data=f"buy_to_{crypto}") for crypto in crypto_prices._CRYPTO_NAMES]
+        [InlineKeyboardButton(crypto, callback_data=f"buy_to_{crypto}") for crypto in crypto_prices._CRYPTO_NAMES if crypto != from_crypto]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.callback_query.answer()
@@ -175,9 +180,12 @@ async def enter_exchange_amount(update: Update, context: ContextTypes.DEFAULT_TY
     to_crypto = update.callback_query.data.split("_")[2]
     context.user_data["to_crypto"] = to_crypto
 
+    user_id = update.effective_user.id
+
     # Запрашиваем у пользователя количество для обмена
     await update.callback_query.answer()
-    await update.callback_query.edit_message_text(f"Введите количество {context.user_data['from_crypto']} для обмена:")
+    await update.callback_query.edit_message_text(f"На данный момент у вас есть {db.show_balance(user_id, context.user_data['from_crypto'])} {context.user_data['from_crypto']}\nВведите количество {context.user_data['from_crypto']} для обмена:")
+
 
     # Устанавливаем флаг ожидания ввода количества
     context.user_data["awaiting_amount"] = True
