@@ -8,7 +8,7 @@ import io
 from datetime import datetime, timedelta
 
 
-bot = TelegramBot("7832412416:AAFKYWoHnpL9ehHcZy8LlyWeyTxq5b8Ap30")
+bot = TelegramBot()
 db = DataBase()  # Создаем экземпляр базы данных
 
 
@@ -211,7 +211,7 @@ async def receive_amount(update: Update, context: ContextTypes.DEFAULT_TYPE):
             keyboard = [
                 [
                     InlineKeyboardButton("Да", callback_data="confirm_exchange"),
-                    InlineKeyboardButton("Нет", callback_data="initiate_crypto_purchase")
+                    InlineKeyboardButton("Нет", callback_data="buy_crypto")
                 ]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
